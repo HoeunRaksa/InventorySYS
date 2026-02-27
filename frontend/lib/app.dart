@@ -5,8 +5,6 @@ import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/features/auth/presentation/providers/auth_provider.dart';
 import 'package:frontend/features/auth/presentation/screens/login_screen.dart';
 import 'package:frontend/features/products/presentation/screens/product_list_screen.dart';
-
-
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:frontend/core/localization/locale_provider.dart';
 
