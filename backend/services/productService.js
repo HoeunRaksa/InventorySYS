@@ -22,7 +22,7 @@ class ProductService {
             WHERE 1=1
         `;
 
-        const searchFilter = ' AND (p.name LIKE @search OR p.name_en LIKE @search OR p.description LIKE @search OR c.name LIKE @search OR c.name_en LIKE @search)';
+        const searchFilter = ' AND (p.name COLLATE Khmer_100_CI_AS LIKE @search OR p.name_en COLLATE Khmer_100_CI_AS LIKE @search OR p.description COLLATE Khmer_100_CI_AS LIKE @search OR c.name COLLATE Khmer_100_CI_AS LIKE @search OR c.name_en COLLATE Khmer_100_CI_AS LIKE @search)';
         const categoryFilter = ' AND p.category_id = @category_id';
 
         if (search && search.trim() !== '') {
@@ -36,8 +36,8 @@ class ProductService {
 
         // Sorting
         let orderBy = ' ORDER BY p.id DESC';
-        if (sort_by === 'name_asc') orderBy = ' ORDER BY p.name ASC';
-        if (sort_by === 'name_desc') orderBy = ' ORDER BY p.name DESC';
+        if (sort_by === 'name_asc') orderBy = ' ORDER BY p.name COLLATE Khmer_100_CI_AS ASC';
+        if (sort_by === 'name_desc') orderBy = ' ORDER BY p.name COLLATE Khmer_100_CI_AS DESC';
         if (sort_by === 'price_asc') orderBy = ' ORDER BY p.price ASC';
         if (sort_by === 'price_desc') orderBy = ' ORDER BY p.price DESC';
 

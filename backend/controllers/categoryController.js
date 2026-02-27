@@ -9,7 +9,7 @@ exports.getCategories = async (req, res) => {
         let request = pool.request();
 
         if (search && search.trim() !== '') {
-            query += ' WHERE name COLLATE Khmer_100_CI_AS LIKE @search OR name_en LIKE @search OR description COLLATE Khmer_100_CI_AS LIKE @search';
+            query += ' WHERE name COLLATE Khmer_100_CI_AS LIKE @search OR name_en COLLATE Khmer_100_CI_AS LIKE @search OR description COLLATE Khmer_100_CI_AS LIKE @search';
             request.input('search', sql.NVarChar(sql.MAX), `%${search}%`);
         }
 
