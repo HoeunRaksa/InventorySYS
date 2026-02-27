@@ -5,7 +5,7 @@ import '../models/category_model.dart';
 class CategoryRemoteSource {
   Future<List<CategoryModel>> getAll({String? search}) async {
     final params = <String, String>{};
-    if (search != null && search.trim().isNotEmpty) params['search'] = search;
+    if (search != null && search.trim().isNotEmpty) params['search'] = search.trim();
     // We removed 'lang' param in backend since we get both now
     final data = await ApiClient.get(ApiEndpoints.categories, params: params);
     return (data as List).map((e) => CategoryModel.fromJson(e)).toList();

@@ -14,6 +14,7 @@ class ProductProvider with ChangeNotifier {
   bool _isLoading = false;
   bool _hasMore = true;
   int _currentPage = 1;
+  int _requestCount = 0;
   String? _error;
 
   List<ProductModel> get products => _products;
@@ -38,12 +39,14 @@ class ProductProvider with ChangeNotifier {
       _currentPage = 1;
       _products = [];
       _hasMore = true;
+      _isLoading = false; // Reset loading to allow new refresh search
     }
 
     if (!_hasMore || _isLoading) return;
 
     _isLoading = true;
     _error = null;
+    final int requestToken = ++_requestCount;
     notifyListeners();
 
     try {
@@ -53,6 +56,8 @@ class ProductProvider with ChangeNotifier {
         sortBy: sortBy,
         categoryId: categoryId,
       );
+
+      if (requestToken != _requestCount) return;
 
       _products.addAll(response.items);
       _hasMore = response.hasMore;

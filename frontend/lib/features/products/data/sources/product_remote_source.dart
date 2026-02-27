@@ -17,7 +17,7 @@ class ProductRemoteSource {
       'page': page.toString(),
       'limit': limit.toString(),
     };
-    if (search != null && search.trim().isNotEmpty) params['search'] = search;
+    if (search != null && search.trim().isNotEmpty) params['search'] = search.trim();
     if (sortBy != null) params['sort_by'] = sortBy;
     if (categoryId != null) params['category_id'] = categoryId.toString();
 

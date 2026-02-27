@@ -22,24 +22,48 @@ class ProductService {
             WHERE 1=1
         `;
 
-        const searchFilter = ' AND (p.name COLLATE Khmer_100_CI_AS LIKE @search OR p.name_en COLLATE Khmer_100_CI_AS LIKE @search OR p.description COLLATE Khmer_100_CI_AS LIKE @search OR c.name COLLATE Khmer_100_CI_AS LIKE @search OR c.name_en COLLATE Khmer_100_CI_AS LIKE @search)';
-        const categoryFilter = ' AND p.category_id = @category_id';
-
         if (search && search.trim() !== '') {
-            query += searchFilter;
-            countQuery += searchFilter;
+            const searchFilterClause = ` AND (
+                p.product_code COLLATE Khmer_100_CI_AS LIKE @search 
+                OR p.name COLLATE Khmer_100_CI_AS LIKE @search
+                OR p.name_en COLLATE Khmer_100_CI_AS LIKE @search
+                OR p.description COLLATE Khmer_100_CI_AS LIKE @search
+                OR c.name COLLATE Khmer_100_CI_AS LIKE @search
+                OR c.name_en COLLATE Khmer_100_CI_AS LIKE @search
+            )`;
+            query += searchFilterClause;
+            countQuery += searchFilterClause;
         }
+
         if (category_id) {
-            query += categoryFilter;
-            countQuery += categoryFilter;
+            const filter = ' AND p.category_id = @category_id';
+            query += filter;
+            countQuery += filter;
         }
 
         // Sorting
-        let orderBy = ' ORDER BY p.id DESC';
-        if (sort_by === 'name_asc') orderBy = ' ORDER BY p.name COLLATE Khmer_100_CI_AS ASC';
-        if (sort_by === 'name_desc') orderBy = ' ORDER BY p.name COLLATE Khmer_100_CI_AS DESC';
-        if (sort_by === 'price_asc') orderBy = ' ORDER BY p.price ASC';
-        if (sort_by === 'price_desc') orderBy = ' ORDER BY p.price DESC';
+        let orderBy = '';
+        if (search && search.trim() !== '') {
+            // Priority 1: Name starts with search term (either Khmer or English)
+            // Priority 2: Product code starts with search term
+            // Priority 3: Other matches (though with @search as 'term%' there won't be many "other" matches, 
+            // but this helps if we ever re-enable contains)
+            orderBy = ` ORDER BY 
+                CASE 
+                    WHEN p.name COLLATE Khmer_100_CI_AS LIKE @search THEN 1
+                    WHEN p.name_en COLLATE Khmer_100_CI_AS LIKE @search THEN 1
+                    WHEN p.product_code COLLATE Khmer_100_CI_AS LIKE @search THEN 2
+                    ELSE 3 
+                END ASC, `;
+        } else {
+            orderBy = ' ORDER BY ';
+        }
+
+        if (sort_by === 'name_asc') orderBy += 'p.name COLLATE Khmer_100_CI_AS ASC';
+        else if (sort_by === 'name_desc') orderBy += 'p.name COLLATE Khmer_100_CI_AS DESC';
+        else if (sort_by === 'price_asc') orderBy += 'p.price ASC';
+        else if (sort_by === 'price_desc') orderBy += 'p.price DESC';
+        else orderBy += 'p.id DESC';
 
         query += orderBy;
         query += ' OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY';
@@ -48,8 +72,9 @@ class ProductService {
         const countRequest = pool.request();
 
         if (search && search.trim() !== '') {
-            mainRequest.input('search', sql.NVarChar(sql.MAX), `%${search}%`);
-            countRequest.input('search', sql.NVarChar(sql.MAX), `%${search}%`);
+            const trimmedSearch = search.trim();
+            mainRequest.input('search', sql.NVarChar, `${trimmedSearch}%`);
+            countRequest.input('search', sql.NVarChar, `${trimmedSearch}%`);
         }
         if (category_id) {
             mainRequest.input('category_id', sql.Int, parseInt(category_id));

@@ -9,11 +9,20 @@ exports.getCategories = async (req, res) => {
         let request = pool.request();
 
         if (search && search.trim() !== '') {
-            query += ' WHERE name COLLATE Khmer_100_CI_AS LIKE @search OR name_en COLLATE Khmer_100_CI_AS LIKE @search OR description COLLATE Khmer_100_CI_AS LIKE @search';
-            request.input('search', sql.NVarChar(sql.MAX), `%${search}%`);
+            const trimmedSearch = search.trim();
+            query += " WHERE (name COLLATE Khmer_100_CI_AS LIKE @search OR name_en COLLATE Khmer_100_CI_AS LIKE @search OR description COLLATE Khmer_100_CI_AS LIKE @search)";
+            request.input('search', sql.NVarChar, `${trimmedSearch}%`);
+            
+            // Priority Sort: Starts with name/name_en first
+            query += ` ORDER BY 
+                CASE 
+                    WHEN name COLLATE Khmer_100_CI_AS LIKE @search THEN 1 
+                    WHEN name_en COLLATE Khmer_100_CI_AS LIKE @search THEN 1
+                    ELSE 2 
+                END ASC, name COLLATE Khmer_100_CI_AS`;
+        } else {
+            query += ' ORDER BY name COLLATE Khmer_100_CI_AS';
         }
-
-        query += ' ORDER BY name COLLATE Khmer_100_CI_AS';
 
         const result = await request.query(query);
         res.json(result.recordset);
@@ -60,7 +69,7 @@ exports.updateCategory = async (req, res) => {
     }
 };
 
-exports.deleteCategory = async (req, res) => {
+ exports.deleteCategory = async (req, res) => {
     try {
         const { id } = req.params;
         const pool = await poolPromise;

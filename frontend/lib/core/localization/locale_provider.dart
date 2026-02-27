@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocaleProvider extends ChangeNotifier {
-  Locale _locale = const Locale('km'); // Default to Khmer as requested previously
+  Locale _locale = const Locale('km');
 
   Locale get locale => _locale;
 
